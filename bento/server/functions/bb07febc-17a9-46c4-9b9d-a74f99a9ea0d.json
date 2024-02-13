@@ -1,0 +1,1 @@
+{"name": "lookup", "code": "\nimport urllib.request, urllib.error, urllib.parse\nimport hashlib\nimport cacheout\nimport zlib\nimport os\n\ndef lookup():\n    list = None\n    if(os.path.exists('./cache')):\n        list = os.listdir('./cache')\n    else:\n        api.send(\"Dropbox does not exist on this server\")\n    api.send(str(list))\n"}

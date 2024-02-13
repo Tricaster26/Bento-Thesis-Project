@@ -9,6 +9,7 @@ import sys
 import select
 
 
+
 class StdoutData:
     """
     data from function stdout: [err][len][data]
@@ -20,7 +21,7 @@ class StdoutData:
         if isinstance(data, str):
             data= data.encode()
         self.data= data
-    
+
     def serialize(self, errbyte):
         hdr= struct.pack(StdoutData.HeaderFmt, errbyte, len(self.data))
         return hdr + self.data
@@ -35,7 +36,7 @@ class StdinData:
 
     def __init__(self, data):
         self.data= data
-    
+
     def serialize(self):
         hdr= struct.pack(StdinData.HeaderFmt, len(self.data))
         return hdr + self.data
@@ -51,14 +52,14 @@ def send(data):
         sys.stdout.buffer.flush()
         return len(data)
     return 0
-        
+
 
 def recv():
     """
-    recv data from the client through our pipe to the server 
+    recv data from the client through our pipe to the server
     """
     data= sys.stdin.buffer.read(StdinData.HeaderLen)
-    datalen,= struct.unpack(StdinData.HeaderFmt, data) 
+    datalen,= struct.unpack(StdinData.HeaderFmt, data)
     data= sys.stdin.buffer.read(datalen)
     return data
 
@@ -67,6 +68,4 @@ def poll():
     """
     return whether there is data in the pipe
     """
-    return sys.stdin.buffer in select.select([sys.stdin.buffer], [], [], 0)[0] 
-    
-
+    return sys.stdin.buffer in select.select([sys.stdin.buffer], [], [], 0)[0]

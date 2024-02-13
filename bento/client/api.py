@@ -9,10 +9,10 @@ from bento.common.protocol import *
 
 class ClientConnection:
     """
-    represents a connection with a Bento server in order to allow exchanging requests/responses 
+    represents a connection with a Bento server in order to allow exchanging requests/responses
     with a Bento server as well as data with an executing function
     """
-    
+
     def __init__(self, address: str, port: int):
         self.conn= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn.connect((address, port))
@@ -40,12 +40,12 @@ class ClientConnection:
         if response.resp_type != Types.Execute:
             raise Exception("Request-Response types don't match")
         return (response.function_id, None) if response.success == True else (None, response.errmsg)
-        
+
 
     def send_open_request(self, function_id):
         """
         send an asynchronous open request that informs the server that the client wants to begin
-        exchanging data with a funciton 
+        exchanging data with a funciton
             - no response expected, any errors will be sent in subsequent function error messages
         """
         request= OpenRequest(function_id)
@@ -54,7 +54,7 @@ class ClientConnection:
 
     def send_close_request(self, function_id):
         """
-        send an asynchronous close request that informs the server that the client would like to 
+        send an asynchronous close request that informs the server that the client would like to
         stop exchanging data with a function
             - no response expected, messages may still be sent in the overlap between a server
               receiving a close request and sending messages
@@ -88,8 +88,9 @@ class ClientConnection:
         msg_type, length, err= FunctionMessage.unpack_hdr(hdr)
         if err is not None:
             raise Exception(f'unpacking header failed: {err}')
-        
+
         data= self._recv_all(length)
+        print(data)
         if data is None:
             raise Exception('failed to recv response data')
 
@@ -105,7 +106,7 @@ class ClientConnection:
         else:
             raise Exception(f"bad message type from server")
 
-       
+
     def _send_request(self, request):
         """
         send wrapper
@@ -113,9 +114,9 @@ class ClientConnection:
         self.conn.sendall(request.serialize())
 
 
-    def _get_response(self):        
+    def _get_response(self):
         """
-        attempt to receive response data 
+        attempt to receive response data
         """
         hdr= self._recv_all(Response.HeaderLen)
         if hdr is None:
@@ -134,9 +135,10 @@ class ClientConnection:
                 return ExecuteResponse.deserialize(data)
             elif resp_type == Types.Store:
                 return StoreResponse.deserialize(data)
+            return ExecuteResponse.deserialize(data)
         else:
-            return ErrorResponse.deserialize(data, resp_type) 
-        
+            return ErrorResponse.deserialize(data, resp_type)
+
 
     def _recv_all(self, n):
         """

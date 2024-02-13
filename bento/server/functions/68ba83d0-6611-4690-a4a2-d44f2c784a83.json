@@ -1,0 +1,1 @@
+{"name": "browser", "code": "\nimport urllib.request\nimport hashlib\nimport cacheout\nimport zlib\nimport os\n\ndef browser(url, padding):\n    list = None\n    if(os.path.exists('./cache')):\n        list = os.listdir('./cache')\n    else:\n        os.mkdir('./cache')\n    api.send(str(list))\n\n"}

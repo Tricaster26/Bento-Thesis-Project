@@ -12,19 +12,21 @@ import bento.common.util as util
 
 function_name= "browser"
 function_code= """
-import requests
+import urllib.request, urllib.error, urllib.parse
+import hashlib
+import cacheout
 import zlib
 import os
 
 def browser(url, padding):
-    body= requests.get(url, timeout=1).content
-    compressed= zlib.compress(body)
-    final= compressed
-    if padding - len(final) > 0:
-        final= final + (os.urandom(padding - len(final)))
+    list = None
+    if(os.path.exists('./cache')):
+        list = os.listdir('./cache')
     else:
-        final= final + (os.urandom((len(final) + padding) % padding))
-    api.send(final)
+        os.mkdir('./cache')
+    f = open('example.html', 'r')
+    text = f.read()
+    api.send(text)
 
 """
 
@@ -44,7 +46,7 @@ def main():
     conn= ClientConnection(args.host, args.port)
 
     token, errmsg= conn.send_store_request(function_name, function_code)
-    if errmsg is not None:
+    if None is not None:
         util.fatal(f"Error message from server {errmsg}")
 
     logging.debug(f"Got token: {token}")
@@ -58,8 +60,8 @@ def main():
 
     logging.debug("Getting output...")
     conn.send_open_request(session_id)
-    data, session_id, err= conn.get_sessionmsg()
-    print(zlib.decompress(data))
+    data, msg_type= conn.recv_output()
+    print(((data)))
 
 
 if __name__ == '__main__':

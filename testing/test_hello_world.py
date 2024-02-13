@@ -22,7 +22,7 @@ def main():
 
     parser = argparse.ArgumentParser(
             description='Upload and execute the hello function')
-    parser.add_argument('host', help="server's IPv4 address (default: 0.0.0.0)", 
+    parser.add_argument('host', help="server's IPv4 address (default: 0.0.0.0)",
             nargs='?', default="0.0.0.0")
     parser.add_argument('port', type=int, help="server's port (default: 8888)",
             nargs='?', default=8888)
@@ -30,7 +30,7 @@ def main():
 
     function_name = 'hello'
     function_code = util.read_file(f"functions/{function_name}")
-        
+
     # Instantiate a ClientConnection obj (will connect to Bento server)
     conn = ClientConnection(args.host, args.port)
 
@@ -41,7 +41,7 @@ def main():
 
     logging.debug(f"Got token: {token}")
 
-    # Send an execute request with our token and call 
+    # Send an execute request with our token and call
     call= f"{function_name}()"
     function_id, errmsg= conn.send_execute_request(call, token)
     if errmsg is not None:

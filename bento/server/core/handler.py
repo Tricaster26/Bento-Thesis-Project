@@ -7,7 +7,7 @@ import select
 import uuid
 
 from . import instance_mngr
-from . import function 
+from . import function
 from .bentoapi import StdoutData
 from common.protocol import *
 
@@ -15,7 +15,7 @@ from common.protocol import *
 class Handler():
     def __init__(self, conn):
         self.conn= conn
-        
+
 
     def handle_communication(self, instance: instance_mngr.Instance):
         """
@@ -35,7 +35,7 @@ class Handler():
         inputs= [self.conn, instance.readout_handle, instance.readerr_handle]
         outputs= [self.conn]
         end_instance= False
-        
+
         while not end_instance:
             try:
                 readable, writeable, in_error= select.select(inputs, outputs, [])
@@ -66,7 +66,7 @@ class Handler():
                         instance.function_proc.stdin.write(datalen + msg.data)
                         instance.function_proc.stdin.flush()
                         logging.debug(f"({instance.function_id}) data written to function")
-                
+
                 elif msg_type == Types.Close:
                     _handle_disconnect()
                     return
@@ -91,13 +91,14 @@ class Handler():
                 errdata= ""
                 for line in instance.readerr_handle:
                     errdata+= line
-                
+
                 if errdata:
                     end_instance= False
                     logging.error(f"({instance.function_id}) Execution error:\n {errdata}")
 
         logging.debug(f"({instance.function_id}) function dead")
         self._send_pkt(FunctionErr(instance.function_id, "function dead"))
+
 
 
     def handle_requests(self) -> instance_mngr.Instance:
@@ -109,13 +110,13 @@ class Handler():
                 req_type, data= self._recv_request()
             except Exception as e:
                 logging.error(e)
-                return None                
+                return None
 
-            if req_type == Types.Store: 
+            if req_type == Types.Store:
                 request= StoreRequest.deserialize(data)
                 logging.debug("Parsing store request")
                 self._handle_store_request(request)
-                
+
             elif req_type == Types.Execute:
                 request= ExecuteRequest.deserialize(data)
                 logging.debug(f"Parsing execute request for token: {request.token}")
@@ -146,7 +147,7 @@ class Handler():
         get the function data and start an instance
         """
         function_data= function.get_function(request.token)
-        
+
         if function_data is not None:
             exec_data= {"call": request.call, "code": function_data['code']}
             exec_data= base64.urlsafe_b64encode(json.dumps(exec_data).encode()).decode()
@@ -155,7 +156,7 @@ class Handler():
         else:
             self._send_pkt(ErrorResponse("invalid token", Types.Execute))
 
-    
+
     def _handle_open_request(self, request: OpenRequest):
         """
         get and return the instance requested
@@ -175,7 +176,7 @@ class Handler():
         hdr= self._recv_all(FunctionMessage.HeaderLen)
         if not hdr:
             raise ConnectionError("failed to recv header")
-        
+
         msg_type, length, err= FunctionMessage.unpack_hdr(hdr)
         if err:
             raise ConnectionError(f"unpacking header failed {err}")
@@ -185,7 +186,7 @@ class Handler():
             raise ConnectionError("failed to recv packet data")
 
         return msg_type, data
-        
+
 
     def _recv_request(self):
         """
@@ -194,7 +195,7 @@ class Handler():
         hdr= self._recv_all(Request.HeaderLen)
         if not hdr:
             raise ConnectionError("failed to recv header")
-            
+
         req_type, length, err= Request.unpack_hdr(hdr)
         if err:
             raise ConnectionError(f"unpacking header failed {err}")
@@ -224,4 +225,3 @@ class Handler():
                 return None
             data.extend(packet)
         return data
-

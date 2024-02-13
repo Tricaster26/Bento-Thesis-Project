@@ -10,7 +10,7 @@ class Options:
         self.working_dir = os.path.abspath(os.getcwd())
         self.functions_dir = os.path.join(self.working_dir, 'functions')
         self.instances_dir = os.path.join(self.working_dir, 'instances')
-        self.function_cmd = 'python3.6'
+        self.function_cmd = 'python3.10'
         self.log_level = logging.DEBUG
 
 opts = Options()
@@ -36,7 +36,7 @@ def parse_cmdline():
             help="working directory (default: current working directory)")
     parser.add_argument('-c', '--function-cmd', default=opts.function_cmd,
             help=f"""the command to run to execute a function (default: {opts.function_cmd}).
-            For SGX execution, specify a command like 
+            For SGX execution, specify a command like
             'graphene-sgx/pal_loader graphene-sgx/manifest'
             """)
     parser.add_argument('-l', '--log-level', default=opts.log_level,

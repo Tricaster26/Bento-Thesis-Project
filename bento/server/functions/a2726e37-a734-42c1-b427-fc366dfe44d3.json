@@ -1,0 +1,1 @@
+{"name": "browser", "code": "\nimport urllib.request\nimport hashlib\nimport cacheout\nimport zlib\nimport os\n\ndef browser(url, padding):\n    os.mkdir('./cache')\n\n"}

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "driver.py", line 9, in <module>
+    import core.bentoapi as bentoapi
+  File "/mnt/c/Users/kutta/OneDrive/Desktop/diss/bento/bento/server/core/bentoapi.py", line 10, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
