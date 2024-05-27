@@ -10,23 +10,21 @@ from bento.client.api import ClientConnection
 from bento.common.protocol import *
 import bento.common.util as util
 
-function_name= "browser"
+function_name= "browse"
 function_code= """
-import urllib.request, urllib.error, urllib.parse
-import hashlib
-import cacheout
+import requests
 import zlib
 import os
 
-def browser(url, padding):
-    list = None
-    if(os.path.exists('./cache')):
-        list = os.listdir('./cache')
+def browse(url, padding):
+    body= requests.get(url, timeout=1).content
+    compressed= zlib.compress(body)
+    final= compressed
+    if padding - len(final) > 0:
+        final= final + (os.urandom(padding - len(final)))
     else:
-        os.mkdir('./cache')
-    f = open('example.html', 'r')
-    text = f.read()
-    api.send(text)
+        final= final + (os.urandom((len(final) + padding) % padding))
+    api.send(final)
 
 """
 
@@ -52,6 +50,7 @@ def main():
     logging.debug(f"Got token: {token}")
 
     call= f"{function_name}('{args.url}', {args.padding})"
+
     session_id, errmsg= conn.send_execute_request(call, token)
     if errmsg is not None:
         util.fatal(f"Error message from server {errmsg}")
@@ -61,7 +60,7 @@ def main():
     logging.debug("Getting output...")
     conn.send_open_request(session_id)
     data, msg_type= conn.recv_output()
-    print(((data)))
+    print(((zlib.decompress(data))))
 
 
 if __name__ == '__main__':

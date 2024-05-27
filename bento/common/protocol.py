@@ -16,6 +16,7 @@ class Types:
     Execute = 0x1
     Open    = 0x2
     Close   = 0x3
+    Register = 0x4
 
 
 class Request:
@@ -50,7 +51,22 @@ class Request:
         deserialize a byte buffer into a Request object
         """
         pass
-    
+
+class RegisterRequest(Request):
+    def __init__(self, token, onion):
+        self.token = token
+        self.onion = onion
+
+    def serialize(self):
+        data= json.dumps({'token': self.token, 'onion': onion})
+        bdata= str(data).encode()
+        header= struct.pack(Request.HeaderFmt,
+                            Types.Register,
+                            len(data))
+
+    def deserialize(cls,data):
+        jdata= json.loads(data.decode())
+        return cls(name= jdata.get('token'))
 
 class StoreRequest(Request):
     def __init__(self, name: str, code: str):
@@ -60,15 +76,15 @@ class StoreRequest(Request):
     def serialize(self):
         data= json.dumps({'name': self.name, 'code': self.code})
         bdata= str(data).encode()
-        header= struct.pack(Request.HeaderFmt, 
-                            Types.Store, 
+        header= struct.pack(Request.HeaderFmt,
+                            Types.Store,
                             len(data))
         return header + bdata
 
     @classmethod
     def deserialize(cls, data):
         jdata= json.loads(data.decode())
-        return cls(name= jdata.get('name'), 
+        return cls(name= jdata.get('name'),
                    code= jdata.get('code'))
 
 
@@ -80,8 +96,8 @@ class ExecuteRequest(Request):
     def serialize(self):
         data= json.dumps({'call': self.call, 'token': self.token})
         bdata= str(data).encode()
-        header= struct.pack(Request.HeaderFmt, 
-                            Types.Execute, 
+        header= struct.pack(Request.HeaderFmt,
+                            Types.Execute,
                             len(data))
         return header + bdata
 
@@ -99,7 +115,7 @@ class OpenRequest(Request):
         function_id= self.function_id.encode()
         header= struct.pack(Request.HeaderFmt, Types.Open, len(function_id))
         return header + function_id
-    
+
     @classmethod
     def deserialize(cls, data):
         return cls(function_id= data.decode())
@@ -112,7 +128,7 @@ class CloseRequest(Request):
     def serialize(self):
         function_id= self.function_id.encode()
         header= struct.pack(Request.HeaderFmt, Types.Close, len(function_id))
-        return header + function_id 
+        return header + function_id
 
     @classmethod
     def deserialize(cls, data):
@@ -159,9 +175,9 @@ class StoreResponse(Response):
 
     def serialize(self):
         bdata= str(self.token).encode()
-        header= struct.pack(Response.HeaderFmt, 
+        header= struct.pack(Response.HeaderFmt,
                             Types.Store,
-                            Response.Success, 
+                            Response.Success,
                             len(bdata))
         return header + bdata
 
@@ -178,9 +194,9 @@ class ExecuteResponse(Response):
 
     def serialize(self):
         bdata= str(self.function_id).encode()
-        header= struct.pack(Response.HeaderFmt, 
+        header= struct.pack(Response.HeaderFmt,
                             Types.Execute,
-                            Response.Success, 
+                            Response.Success,
                             len(bdata))
         return header + bdata
 
@@ -199,7 +215,7 @@ class ErrorResponse(Response):
         bdata= str(self.errmsg).encode()
         header= struct.pack(Response.HeaderFmt,
                             self.resp_type,
-                            Response.Error, 
+                            Response.Error,
                             len(bdata))
         return header + bdata
 
@@ -219,7 +235,7 @@ class MsgTypes:
     Output      = 0x6
     Input       = 0x7
 
-function_id_len= 36   
+function_id_len= 36
 
 class FunctionMessage():
     """
@@ -240,7 +256,7 @@ class FunctionMessage():
         pkt_len= len(function_id) + len(self.data)
         header= struct.pack(FunctionMessage.HeaderFmt, self.type, pkt_len)
         return header + function_id + self.data
-    
+
     @classmethod
     def deserialize(cls, data):
         function_id= data[:function_id_len].decode()
@@ -265,7 +281,7 @@ class Error(FunctionMessage):
         super().__init__(function_id, data)
         self.type= MsgTypes.Error
 
-   
+
 class Output(FunctionMessage):
     """
     sent from a function as stdout
@@ -291,5 +307,3 @@ class FunctionErr(FunctionMessage):
     def __init__(self, function_id: str, data: bytes):
         super().__init__(function_id, data)
         self.type= MsgTypes.FunctionErr
-
-      

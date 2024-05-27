@@ -27,7 +27,6 @@ class ClientThread(Thread):
         self.instance= None
         self.handler= Handler(conn)
 
-
     def run(self):
         while True:
             self.instance= self.handler.handle_requests()
@@ -42,7 +41,7 @@ class ClientThread(Thread):
     def _clean_instance(self):
         """
         clean up the client's connection to an instance
-            - the instance may continue to run while no clients are interacting with it 
+            - the instance may continue to run while no clients are interacting with it
         """
         if self.instance:
             logging.debug(f"({self.instance.function_id}) cleaning up instance")
@@ -56,7 +55,7 @@ class ClientThread(Thread):
 
     def _handle_disconnect(self):
         """
-        wait a sec before cleaning the client's instance 
+        wait a sec before cleaning the client's instance
         """
         logging.info(f"client disconnect: {self.address}:{self.port}")
         time.sleep(1)
@@ -88,6 +87,7 @@ def __main():
     logging.getLogger().setLevel(opts.log_level)
 
     sock= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((opts.host, opts.port))
 
@@ -96,7 +96,11 @@ def __main():
         logging.info(f"Listening on {opts.host}:{opts.port}")
         while True:
             conn, addr= sock.accept()
-            logging.info("New connection from %s:%d" % addr)
+            print(conn)
+            if(addr[0] == "127.0.0.1"):
+                logging.info("Hidden Connection Established: Exit node %s:%d" %addr)
+            else:
+                logging.info("New connection from %s:%d" % addr)
             new_thread= ClientThread(addr[0], addr[1], conn)
             new_thread.start()
 

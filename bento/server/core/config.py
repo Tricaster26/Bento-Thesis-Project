@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 import os.path
+from cryptography.fernet import Fernet
+import warnings
 
 class Options:
     def __init__(self):
@@ -9,8 +11,10 @@ class Options:
         self.port = 8888
         self.working_dir = os.path.abspath(os.getcwd())
         self.functions_dir = os.path.join(self.working_dir, 'functions')
+        self.hid_functions_dir = os.path.join(self.working_dir, 'hidden functions')
         self.instances_dir = os.path.join(self.working_dir, 'instances')
         self.function_cmd = 'python3.10'
+        self.key = Fernet.generate_key().decode('utf-8')
         self.log_level = logging.DEBUG
 
 opts = Options()
@@ -30,6 +34,8 @@ def parse_cmdline():
             description='Run a bento server')
     parser.add_argument('host', nargs='?', default=opts.host,
             help=f"server's IPv4 address (default: {opts.host})")
+    parser.add_argument('key', nargs='?', default=opts.key,
+            help=f"cryptographic key used to register tokens in BFD (CAUTION:default is random, please set ur own password)")
     parser.add_argument('port', nargs='?', type=int, default=opts.port,
             help=f"server's port (default: {opts.port})")
     parser.add_argument('-w', '--working-dir', default=opts.working_dir,
@@ -45,7 +51,11 @@ def parse_cmdline():
 
     args = parser.parse_args()
 
-    for name in ('host', 'port', 'function_cmd'):
+    #warn user that key is random and not displayed
+    if(opts.key == args.key):
+        logging.warn("Default key is random. Consider using your own key: " + opts.key)
+
+    for name in ('host', 'key', 'port', 'function_cmd'):
         setattr(opts, name, getattr(args, name))
 
     # test if the user specified the working dir

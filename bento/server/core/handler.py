@@ -128,7 +128,9 @@ class Handler():
                 instance= self._handle_open_request(request)
                 if instance:
                     return instance
-
+            elif req_type == Types.Register:
+                request= RegisterRequest.deserialize(data)
+                logging.debug(f"Parsing register request for token {request.token}")
             else:
                 self._send_pkt(ErrorResponse('invalid request', req_type))
 
@@ -140,6 +142,18 @@ class Handler():
         token= str(uuid.uuid4())
         function.create_function(token, request.name, request.code)
         self._send_pkt(StoreResponse(token))
+
+
+    def _handle_registry_request(self, request: RegisterRequest):
+        """
+        Registers function to bento function directory if token exists in server
+        """
+
+        if  function.get_function(request.token) is not None:
+            function.register_function(request.token)
+            self._send_pkt(RegisterRequest(token))
+        else:
+            self._send_pkt(ErrorResponse("token does not exist in this server", Types.Register))
 
 
     def _handle_execute_request(self, request: ExecuteRequest):

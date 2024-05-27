@@ -77,7 +77,7 @@ class Instance:
 
     def _execute(self, exec_data):
         """
-        execute the function in a defined environment and open handles to read and write data 
+        execute the function in a defined environment and open handles to read and write data
         """
         cmd= shlex.split(opts.function_cmd)
         cmd.append('driver.py')
@@ -104,24 +104,23 @@ class Instance:
         attempt to clean up instance processes and artifacts if function has completed execution
             - return whether cleanup was successful
         """
-        if self.function_proc.poll is not None: 
+        if self.function_proc.poll is not None:
             self.function_proc.wait()
             if self.readout_handle:
                 self.readout_handle.close()
             if self.readerr_handle:
                 self.readerr_handle.close()
-            # TODO: remove output file 
+            # TODO: remove output file
             return True
         else:
             return False
 
-        
+
     def kill(self):
         """
         force kill the function process and cleanup
         """
-        if self.function_proc.poll is None: 
+        if self.function_proc.poll is None:
             logging.info(f"({self.function_id}) killing instance")
             self.function_proc.kill()
         self.clean()
-
